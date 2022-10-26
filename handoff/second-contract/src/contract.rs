@@ -1,11 +1,10 @@
 use cosmwasm_std::{
     to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier, QueryRequest,
-    StdError, StdResult, Storage, WasmQuery,
+    StdError, StdResult, Storage, WasmQuery, debug_print,
 };
 
 use crate::msg::{FirstContractQueryMsg, HandleMsg, InitMsg, QueryMsg};
-use crate::state::{config, State};
-use first_export::ExportData;
+use crate::state::{config, State, ExportData};
 
 pub fn init<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
@@ -20,7 +19,7 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
     };
 
     config(&mut deps.storage).save(&state)?;
-
+    debug_print("hola senor");
     Ok(InitResponse::default())
 }
 
@@ -29,6 +28,7 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     env: Env,
     msg: HandleMsg,
 ) -> StdResult<HandleResponse> {
+    debug_print("hola mundo");
     // Make sure to either not do anything else with your contract until the migration is over,
     // and never retry it, or add a mechanism for failing if a part of the migration is retried
     // and don't allow any operation before the migration is over.
@@ -44,6 +44,7 @@ pub fn set_migration_secret<S: Storage, A: Api, Q: Querier>(
     env: Env,
     secret: Binary,
 ) -> StdResult<HandleResponse> {
+    debug_print("hola luna");
     let mut conf = config(&mut deps.storage);
     let mut state = conf.load()?;
     if env.message.sender != state.first_contract_addr {

@@ -1,11 +1,10 @@
 use cosmwasm_std::{
     to_binary, Api, Binary, CosmosMsg, Env, Extern, HandleResponse, HumanAddr, InitResponse,
-    Querier, StdError, StdResult, Storage, WasmMsg,
+    Querier, StdError, StdResult, Storage, WasmMsg, debug_print,
 };
-use first_export::ExportData;
 
 use crate::msg::{HandleMsg, InitMsg, QueryMsg, SecondContractHandleMsg};
-use crate::state::{config, config_read, ContractMode, State};
+use crate::state::{config, config_read, ContractMode, State, ExportData};
 use cosmwasm_storage::Singleton;
 
 pub fn init<S: Storage, A: Api, Q: Querier>(
@@ -19,6 +18,7 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
         migration_secret: None,
         mode: ContractMode::Running,
     };
+    debug_print("hello world");
 
     config(&mut deps.storage).save(&state)?;
 
@@ -50,6 +50,7 @@ pub fn migrate<S: Storage>(
     address: HumanAddr,
     code_hash: String,
 ) -> StdResult<HandleResponse> {
+    debug_print("fire ze lasers");
     let mut state = conf.load()?;
     if env.message.sender != state.owner {
         return Err(StdError::generic_err(
@@ -69,13 +70,17 @@ pub fn migrate<S: Storage>(
     state.mode = ContractMode::Migrated;
     state.migration_secret = Some(secret.clone());
     conf.save(&state)?;
+    debug_print("fire more lasers");
+    debug_print!("address {}", address);
+    debug_print!("hash {}", code_hash);
 
     let messages = vec![CosmosMsg::Wasm(WasmMsg::Execute {
-        msg: to_binary(&SecondContractHandleMsg::SetMigrationSecret { secret })?,
+        msg: to_binary(&SecondContractHandleMsg::SetMigrationSecret { secret: secret.clone() })?,
         send: vec![],
         contract_addr: address,
         callback_code_hash: code_hash,
     })];
+    debug_print!("give zem ze messages: {:?}", messages);
     Ok(HandleResponse {
         log: vec![],
         data: None,
